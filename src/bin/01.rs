@@ -1,18 +1,17 @@
-use regex::Regex;
-
 advent_of_code::solution!(1);
 
 pub fn part_one(input: &str) -> Option<u32> {
-    let digits = Regex::new(r"\d").unwrap();
     let mut result = 0;
     for line in input.lines() {
-        let mut matches = digits.find_iter(line);
-        if let Some(first) = matches.next() {
-            let last = matches.last().unwrap_or(first);
-            result += format!("{}{}", first.as_str(), last.as_str())
-                .parse::<u32>()
-                .unwrap();
+        let mut digits = Vec::new();
+        for c in line.chars() {
+            if let Some(digit) = c.to_digit(10) {
+                digits.push(digit);
+            }
         }
+        result += format!("{}{}", digits.first().unwrap(), digits.last().unwrap())
+            .parse::<u32>()
+            .unwrap();
     }
     Some(result)
 }
