@@ -42,14 +42,16 @@ pub fn part_two(input: &str) -> Option<u32> {
         ("8", 8),
         ("9", 9),
     ]);
-    for line in input.lines() {
-        let mut matches = digits.find_iter(line);
-        let first = map_numbers.get(matches.next().unwrap().as_str()).unwrap();
-        if let Some(last) = matches.last() {
-            result += (first * 10) + map_numbers.get(last.as_str()).unwrap();
-        } else {
-            result += (first * 10) + first;
-        }
+    for line in input.lines().filter(|line| !line.is_empty()) {
+        let matches: Vec<String> = digits
+            .find_iter(line)
+            .map(|m| m.as_str().to_string())
+            .collect();
+        let first = matches.first().unwrap().to_owned();
+        let last = matches.last().unwrap_or(&first).to_owned();
+        let first = map_numbers.get(&first as &str).unwrap() * 10;
+        let last = map_numbers.get(&last as &str).unwrap();
+        result += first + last;
     }
     Some(result)
 }
@@ -61,12 +63,12 @@ mod tests {
     #[test]
     fn test_part_one() {
         let result = part_one(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(209));
     }
 
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(281));
     }
 }
