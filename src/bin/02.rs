@@ -1,3 +1,5 @@
+use std::f32::INFINITY;
+
 use regex::Regex;
 advent_of_code::solution!(2);
 
@@ -24,24 +26,25 @@ impl Default for Limits {
     }
 }
 
+fn get_game_number(line: &str) -> u32 {
+    let game_number_regex = Regex::new(r"Game (\d+)").unwrap();
+    game_number_regex
+        .captures(line)
+        .ok_or("No game number")
+        .unwrap()
+        .get(1)
+        .unwrap()
+        .as_str()
+        .parse::<u32>()
+        .unwrap()
+}
+
 pub fn part_one(input: &str) -> Option<u32> {
     let limits = Limits::default();
-    let game_number = Regex::new(r"Game (\d+)").unwrap();
     let mut total_game_number = 0;
     for line in input.lines() {
+        let game_number = get_game_number(line);
         let mut game_possible = true;
-        println!("{}", line);
-        let game_number = game_number
-            .captures(line)
-            .ok_or("No game number")
-            .unwrap()
-            .get(1)
-            .unwrap()
-            .as_str()
-            .parse::<u32>()
-            .unwrap();
-        // println!("Game {}", game_number);
-        // println!("{:?}", line);
         for draw in line
             .split_once(": ")
             .unwrap()
@@ -79,8 +82,62 @@ pub fn part_one(input: &str) -> Option<u32> {
     Some(total_game_number)
 }
 
+struct CubeCounter {
+    red: u32,
+    green: u32,
+    blue: u32,
+}
+
+impl CubeCounter {
+    fn new() -> Self {
+        Self {
+            red: 0,
+            green: 0,
+            blue: 0,
+        }
+    }
+
+    fn compare(&mut self, colour: &str, count: u32) {
+        match (colour, count) {
+            ("red", count) => {
+                if count > self.red {
+                    self.red = count;
+                }
+            }
+            ("green", count) => {
+                if count > self.green {
+                    self.green = count;
+                }
+            }
+            ("blue", count) => {
+                if count > self.blue {
+                    self.blue = count;
+                }
+            }
+            _ => panic!("Unknown colour"),
+        }
+    }
+}
+
 pub fn part_two(input: &str) -> Option<u32> {
-    None
+    let mut total_game_number = 0;
+    for line in input.lines() {
+        let mut cube_counter = CubeCounter::new();
+        for draw in line
+            .split_once(": ")
+            .unwrap()
+            .1
+            .replace(';', ",")
+            .split(", ")
+        {
+            let (count_str, colour) = draw.split_once(' ').unwrap();
+            let count = count_str.parse::<u32>().unwrap();
+            cube_counter.compare(colour, count);
+        }
+        let power = cube_counter.red * cube_counter.green * cube_counter.blue;
+        total_game_number += power
+    }
+    Some(total_game_number)
 }
 
 #[cfg(test)]
